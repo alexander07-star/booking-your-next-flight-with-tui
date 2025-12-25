@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <title>TUI Seat Booking – PTFS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: Arial, sans-serif; background:#f5f7fa; margin:0; padding:20px; }
+    h1, h2 { color:#003366; }
+    .card { background:#fff; padding:20px; border-radius:10px; box-shadow:0 5px 15px rgba(0,0,0,.1); margin-bottom:20px; }
+    label { display:block; margin-top:10px; }
+    input, select, button { width:100%; padding:10px; margin-top:5px; }
+    button { background:#0077cc; color:#fff; border:none; border-radius:6px; cursor:pointer; }
+    button:hover { background:#005fa3; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { padding:8px; border-bottom:1px solid #ddd; text-align:left; }
+  </style>
+</head>
+<body>
+
+<h1>TUI Seat Booking – PTFS</h1>
+<p>Simpele website om zitjes te reserveren voor TUI-vluchten (vluchtsimulator / PTFS).</p>
+
+<div class="card">
+  <h2>Stoel reserveren</h2>
+  <label>Naam</label>
+  <input id="name" placeholder="Jouw naam" />
+
+  <label>Vluchtnummer</label>
+  <select id="flightSelect"></select>
+
+  <label>Vliegtuigtype</label>
+  <select id="aircraft">
+    <option value="A320">Airbus A320</option>
+    <option value="B737">Boeing 737</option>
+    <option value="B757">Boeing 757</option>
+    <option value="B767">Boeing 767</option>
+    <option value="B787">Boeing 787</option>
+    <option value="A330">Airbus A330</option>
+    <option value="E190">Embraer 190</option>
+  </select>
+
+  <label>Stoelnummer</label>
+  <input id="seat" placeholder="bijv. 12A" />
+
+  <button onclick="bookSeat()">Reserveer zitje</button>
+</div>
+
+<div class="card">
+  <h2>Vlucht toevoegen (admin)</h2>
+  <label>Vluchtnummer</label>
+  <input id="newFlight" placeholder="bijv. TUI123" />
+  <button onclick="addFlight()">Vlucht toevoegen</button>
+</div>
+
+<div class="card">
+  <h2>Alle reserveringen</h2>
+  <table>
+    <thead>
+      <tr><th>Naam</th><th>Vluchtnummer</th><th>Vliegtuig</th><th>Stoel</th></tr>
+    </thead>
+    <tbody id="bookings"></tbody>
+  </table>
+</div>
+
+<script>
+  // Data opslag (blijft bewaard in de browser)
+  let flights = JSON.parse(localStorage.getItem('flights')) || [];
+  let bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+
+  function save() {
+    localStorage.setItem('flights', JSON.stringify(flights));
+    localStorage.setItem('bookings', JSON.stringify(bookings));
+  }
+
+  function renderFlights() {
+    const select = document.getElementById('flightSelect');
+    select.innerHTML = '';
+    flights.forEach(f => {
+      const opt = document.createElement('option');
+      opt.value = f;
+      opt.textContent = f;
+      select.appendChild(opt);
+    });
+  }
+
+  function renderBookings() {
+    const tbody = document.getElementById('bookings');
+    tbody.innerHTML = '';
+    bookings.forEach(b => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${b.name}</td><td>${b.flight}</td><td>${b.aircraft}</td><td>${b.seat}</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+
+  function addFlight() {
+    const f = document.getElementById('newFlight').value.trim();
+    if (!f) return alert('Vul een vluchtnummer in');
+    flights.push(f);
+    save();
+    renderFlights();
+    document.getElementById('newFlight').value = '';
+  }
+
+  function bookSeat() {
+    const name = document.getElementById('name').value.trim();
+    const flight = document.getElementById('flightSelect').value;
+    const seat = document.getElementById('seat').value.trim();
+    if (!name || !seat || !flight) return alert('Vul alles in');
+    const aircraft = document.getElementById('aircraft').value;
+    bookings.push({ name, flight, aircraft, seat });
+    save();
+    renderBookings();
+    document.getElementById('name').value = '';
+    document.getElementById('seat').value = '';
+  }
+
+  renderFlights();
+  renderBookings();
+</script>
+
+</body>
+</html>
